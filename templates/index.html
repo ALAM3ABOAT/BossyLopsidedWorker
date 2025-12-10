@@ -79,10 +79,12 @@
   <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
   <div class="sidebar">
     <button class="close-sidebar" onclick="toggleSidebar()">✕</button>
-    <a href="{{ url_for('index') }}">الرئيسية</a>
-    <a href="{{ url_for('category', cat='ألعاب') }}">الألعاب</a>
-    <a href="{{ url_for('category', cat='أدوات') }}">التطبيقات</a>
-    <a href="{{ url_for('login') }}">الإدارة</a>
+    <a href="{{ url_for('index') }}">🏠 الرئيسية</a>
+    <a href="{{ url_for('category', cat='ألعاب') }}">🎮 الألعاب</a>
+    <a href="{{ url_for('category', cat='أدوات') }}">🔧 التطبيقات</a>
+    <a href="{{ url_for('category', cat='تواصل') }}">💬 تواصل</a>
+    <a href="{{ url_for('category', cat='وسائط') }}">🎵 وسائط</a>
+    <a href="{{ url_for('login') }}">🔐 لوحة الإدارة</a>
   </div>
   
   <section class="hero">
