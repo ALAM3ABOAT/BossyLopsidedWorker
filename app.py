@@ -1,13 +1,20 @@
 import os
-from flask import Flask, render_template, request, redirect, url_for, session, jsonify, flash
+from flask import Flask, render_template, request, redirect, url_for, session, jsonify, flash, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename
 from functools import wraps
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///apps.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['UPLOAD_FOLDER'] = 'uploads'
+app.config['MAX_CONTENT_LENGTH'] = 500 * 1024 * 1024  # 500 MB max file size
+
+# إنشاء مجلد التحميلات إذا لم يكن موجوداً
+if not os.path.exists(app.config['UPLOAD_FOLDER']):
+    os.makedirs(app.config['UPLOAD_FOLDER'])
 
 db = SQLAlchemy(app)
 
@@ -81,6 +88,19 @@ def admin_panel():
 @app.route('/admin/add', methods=['POST'])
 @login_required
 def add_app():
+    download_link = request.form.get('download_link', '')
+    
+    # التحقق من وجود ملف مرفوع
+    if 'app_file' in request.files:
+        file = request.files['app_file']
+        if file and file.filename:
+            filename = secure_filename(file.filename)
+            # إضافة timestamp لتجنب التكرار
+            timestamp = str(int(os.times()[4] * 1000))
+            filename = f"{timestamp}_{filename}"
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            download_link = url_for('download_file', filename=filename, _external=True)
+    
     new_app = App(
         name=request.form['name'],
         description=request.form['description'],
@@ -89,10 +109,11 @@ def add_app():
         downloads=request.form.get('downloads', '0'),
         category=request.form['category'],
         icon=request.form.get('icon', '📱'),
-        download_link=request.form['download_link']
+        download_link=download_link
     )
     db.session.add(new_app)
     db.session.commit()
+    flash('تم إضافة التطبيق بنجاح!', 'success')
     return redirect(url_for('admin_panel'))
 
 @app.route('/admin/delete/<int:id>')
@@ -117,6 +138,10 @@ def edit_app(id):
     app_to_edit.download_link = request.form['download_link']
     db.session.commit()
     return redirect(url_for('admin_panel'))
+
+@app.route('/downloads/<filename>')
+def download_file(filename):
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename, as_attachment=True)
 
 def init_db():
     with app.app_context():
