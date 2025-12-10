@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>لوحة الإدارة</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Cairo', sans-serif; background: #f5f5f5; min-height: 100vh; }
+    header { background: #1a237e; color: white; padding: 20px; display: flex; justify-content: space-between; align-items: center; }
+    header h1 { font-size: 20px; }
+    .header-links a { color: white; text-decoration: none; margin-right: 20px; }
+    .container { max-width: 900px; margin: 0 auto; padding: 20px; }
+    
+    .add-form { background: white; border-radius: 15px; padding: 25px; margin-bottom: 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
+    .add-form h2 { margin-bottom: 20px; color: #1a237e; }
+    .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 15px; }
+    .form-group { margin-bottom: 15px; }
+    .form-group label { display: block; margin-bottom: 5px; font-weight: 600; color: #333; }
+    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px; font-family: 'Cairo', sans-serif; }
+    .form-group textarea { resize: vertical; min-height: 80px; }
+    .submit-btn { background: #4caf50; color: white; border: none; padding: 12px 30px; border-radius: 8px; font-size: 16px; cursor: pointer; font-family: 'Cairo', sans-serif; }
+    .submit-btn:hover { background: #43a047; }
+    
+    .apps-list h2 { margin-bottom: 20px; color: #1a237e; }
+    .app-item { background: white; border-radius: 10px; padding: 20px; margin-bottom: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
+    .app-item-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .app-item h3 { font-size: 18px; display: flex; align-items: center; gap: 10px; }
+    .app-item-actions { display: flex; gap: 10px; }
+    .edit-btn, .delete-btn { padding: 8px 15px; border: none; border-radius: 5px; cursor: pointer; font-family: 'Cairo', sans-serif; }
+    .edit-btn { background: #2196F3; color: white; }
+    .delete-btn { background: #f44336; color: white; }
+    .app-item p { color: #666; font-size: 14px; }
+    .app-meta { display: flex; gap: 15px; margin-top: 10px; font-size: 13px; color: #888; }
+    
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; }
+    .modal.active { display: flex; }
+    .modal-content { background: white; border-radius: 15px; padding: 30px; width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .close-modal { background: none; border: none; font-size: 24px; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🛡️ لوحة الإدارة</h1>
+    <div class="header-links">
+      <a href="{{ url_for('index') }}">الرئيسية</a>
+      <a href="{{ url_for('logout') }}">تسجيل خروج</a>
+    </div>
+  </header>
+  
+  <div class="container">
+    <div class="add-form">
+      <h2>➕ إضافة تطبيق جديد</h2>
+      <form method="POST" action="{{ url_for('add_app') }}">
+        <div class="form-row">
+          <div class="form-group">
+            <label>اسم التطبيق</label>
+            <input type="text" name="name" required placeholder="مثال: واتساب المعدل">
+          </div>
+          <div class="form-group">
+            <label>الأيقونة (إيموجي)</label>
+            <input type="text" name="icon" placeholder="📱" value="📱">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>الوصف</label>
+          <textarea name="description" placeholder="وصف التطبيق والميزات المضافة"></textarea>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>الإصدار</label>
+            <input type="text" name="version" required placeholder="1.0.0">
+          </div>
+          <div class="form-group">
+            <label>الحجم</label>
+            <input type="text" name="size" required placeholder="50 MB">
+          </div>
+          <div class="form-group">
+            <label>التحميلات</label>
+            <input type="text" name="downloads" placeholder="1000">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>التصنيف</label>
+            <select name="category">
+              <option value="الكل">الكل</option>
+              <option value="ألعاب">ألعاب</option>
+              <option value="أدوات">أدوات</option>
+              <option value="تواصل">تواصل</option>
+              <option value="وسائط">وسائط</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>رابط التحميل</label>
+            <input type="url" name="download_link" required placeholder="https://...">
+          </div>
+        </div>
+        <button type="submit" class="submit-btn">إضافة التطبيق</button>
+      </form>
+    </div>
+    
+    <div class="apps-list">
+      <h2>📱 التطبيقات ({{ apps|length }})</h2>
+      {% for app in apps %}
+      <div class="app-item">
+        <div class="app-item-header">
+          <h3>{{ app.icon }} {{ app.name }}</h3>
+          <div class="app-item-actions">
+            <button class="edit-btn" onclick="openEditModal({{ app.id }}, '{{ app.name }}', '{{ app.description }}', '{{ app.version }}', '{{ app.size }}', '{{ app.downloads }}', '{{ app.category }}', '{{ app.icon }}', '{{ app.download_link }}')">تعديل</button>
+            <a href="{{ url_for('delete_app', id=app.id) }}" class="delete-btn" onclick="return confirm('هل أنت متأكد من الحذف؟')">حذف</a>
+          </div>
+        </div>
+        <p>{{ app.description }}</p>
+        <div class="app-meta">
+          <span>الإصدار: {{ app.version }}</span>
+          <span>الحجم: {{ app.size }}</span>
+          <span>التحميلات: {{ app.downloads }}</span>
+          <span>التصنيف: {{ app.category }}</span>
+        </div>
+      </div>
+      {% else %}
+      <div class="app-item">
+        <p style="text-align: center;">لا توجد تطبيقات بعد. أضف أول تطبيق!</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  
+  <div class="modal" id="editModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>تعديل التطبيق</h2>
+        <button class="close-modal" onclick="closeEditModal()">✕</button>
+      </div>
+      <form method="POST" id="editForm">
+        <div class="form-group">
+          <label>اسم التطبيق</label>
+          <input type="text" name="name" id="edit_name" required>
+        </div>
+        <div class="form-group">
+          <label>الأيقونة</label>
+          <input type="text" name="icon" id="edit_icon">
+        </div>
+        <div class="form-group">
+          <label>الوصف</label>
+          <textarea name="description" id="edit_description"></textarea>
+        </div>
+        <div class="form-group">
+          <label>الإصدار</label>
+          <input type="text" name="version" id="edit_version" required>
+        </div>
+        <div class="form-group">
+          <label>الحجم</label>
+          <input type="text" name="size" id="edit_size" required>
+        </div>
+        <div class="form-group">
+          <label>التحميلات</label>
+          <input type="text" name="downloads" id="edit_downloads">
+        </div>
+        <div class="form-group">
+          <label>التصنيف</label>
+          <select name="category" id="edit_category">
+            <option value="الكل">الكل</option>
+            <option value="ألعاب">ألعاب</option>
+            <option value="أدوات">أدوات</option>
+            <option value="تواصل">تواصل</option>
+            <option value="وسائط">وسائط</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>رابط التحميل</label>
+          <input type="url" name="download_link" id="edit_download_link" required>
+        </div>
+        <button type="submit" class="submit-btn">حفظ التعديلات</button>
+      </form>
+    </div>
+  </div>
+  
+  <script>
+    function openEditModal(id, name, desc, version, size, downloads, category, icon, link) {
+      document.getElementById('editForm').action = '/admin/edit/' + id;
+      document.getElementById('edit_name').value = name;
+      document.getElementById('edit_description').value = desc;
+      document.getElementById('edit_version').value = version;
+      document.getElementById('edit_size').value = size;
+      document.getElementById('edit_downloads').value = downloads;
+      document.getElementById('edit_category').value = category;
+      document.getElementById('edit_icon').value = icon;
+      document.getElementById('edit_download_link').value = link;
+      document.getElementById('editModal').classList.add('active');
+    }
+    
+    function closeEditModal() {
+      document.getElementById('editModal').classList.remove('active');
+    }
+  </script>
+</body>
+</html>
