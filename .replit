@@ -8,6 +8,7 @@ packages = ["static-web-server"]
 [deployment]
 publicDir = "."
 deploymentTarget = "static"
+run = ["sh", "-c", "python app.py"]
 
 [workflows]
 runButton = "Flask App"
