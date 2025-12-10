@@ -7,8 +7,7 @@ packages = ["static-web-server"]
 
 [deployment]
 publicDir = "."
-deploymentTarget = "autoscale"
-run = ["python", "app.py"]
+deploymentTarget = "static"
 
 [workflows]
 runButton = "Project"
