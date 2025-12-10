@@ -6,9 +6,8 @@ channel = "stable-24_11"
 packages = ["static-web-server"]
 
 [deployment]
-publicDir = "."
-deploymentTarget = "static"
 run = ["sh", "-c", "python app.py"]
+deploymentTarget = "cloudrun"
 
 [workflows]
 runButton = "Flask App"
